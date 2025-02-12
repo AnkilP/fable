@@ -110,7 +110,7 @@ cache_volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 class Inference:
     @modal.enter()
     def load_pipeline(self):
-        self.vae = AutoencoderKL.from_pretrained("stabilityai/sdxl-vae", torch_dtype=torch.float16).to("cuda")
+        self.vae = AutoencoderKL.from_pretrained(MODEL_ID, torch_dtype=torch.float16).to("cuda")
         self.pipe = StableDiffusionXLPipeline.from_pretrained(
             MODEL_ID,
             # revision=MODEL_REVISION_ID,
