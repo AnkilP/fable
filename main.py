@@ -110,16 +110,6 @@ cache_volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 class Inference:
     @modal.enter()
     def load_pipeline(self):
-        model_name = "microsoft/phi-4"
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16,  # Use float16 for efficiency
-            device_map="auto"  # Automatically selects GPU if available
-        )
-
-        # Create text generation pipeline
-        self.llm = pipeline("text-generation", model=model, tokenizer=tokenizer)
         self.vae = AutoencoderKL.from_pretrained("stabilityai/sdxl-vae", torch_dtype=torch.float16).to("cuda")
         self.pipe = StableDiffusionXLPipeline.from_pretrained(
             MODEL_ID,
@@ -147,9 +137,6 @@ class Inference:
     ):
         seed = seed if seed is not None else random.randint(0, 2 ** 32 - 1)
         torch.manual_seed(seed)
-        prompt_template = f"{prompt}. Keep the resulting text to 70 tokens. Enhance this text-to-image prompt for Stable Diffusion 3. Paul Atreides has just realized he is the Kwisatz Haderach. Infinite possibilities abound. Help create scenes and plots around the user's prompts. Add high detail, make it clear and crisp and make it more cinematic. Enhanced prompt:"
-        enhanced = self.llm(prompt_template, max_length=150, do_sample=True)
-        new_prompt = enhanced[0]['generated_text']
 
         latents = torch.randn(
             (2, self.pipe.unet.config.in_channels, 512 // 8, 512 // 8),
