@@ -110,7 +110,6 @@ cache_volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 class Inference:
     @modal.enter()
     def load_pipeline(self):
-        login(token='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', add_to_git_credential=False)
         model_name = "microsoft/phi-4"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
