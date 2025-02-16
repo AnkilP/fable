@@ -9,6 +9,7 @@ from typing import Union, List
 class MetadataInput:
     prompt: Union[str, List[str]]
     vector_field: Union[torch.Tensor, np.ndarray]
+    timestep: Union[float, int]
 
 
 @dataclass
@@ -25,14 +26,18 @@ class InMemoryPromptIndex:
         self.hnsw_m = hnsw_m
         self.index = faiss.IndexHNSWFlat(self.embedding_dim, self.hnsw_m)
         self.metadata_store = {}
+        self.direct_mapping_store = {}
 
-    def add_prompt(self, prompt, obj):
+    def add_prompt(self, prompt, obj, timestep):
         faiss_prompt = self._to_faiss_compatible(prompt)
         self.index.add(np.expand_dims(faiss_prompt, axis=0))
         vector_id = self.index.ntotal - 1
-        self.metadata_store[vector_id] = MetadataInput(prompt=prompt, vector_field=obj)
+        self.metadata_store[vector_id] = MetadataInput(prompt=prompt, vector_field=obj, timestep=timestep)
+        self.direct_mapping_store[prompt] = MetadataInput(prompt=prompt, vector_field=obj, timestep=timestep)
 
     def get_prompt(self, prompt):
+        if prompt in self.direct_mapping_store:
+            return self.direct_mapping_store[prompt]
         faiss_query = self._to_faiss_compatible(prompt)
         distances, indexes = self.index.search(np.expand_dims(faiss_query, axis=0), k=1)
         # todo: k = 3 can allow us to do HMM approximation and eliminate compound error in the vector

@@ -26,6 +26,7 @@ from pathlib import Path
 
 import modal
 
+from in_memory_prompt_index import InMemoryPromptIndex
 from optimized_stable_diffusion import OptimizedStableDiffusion3Pipeline
 
 MINUTES = 60
@@ -117,7 +118,8 @@ class Inference:
             revision=MODEL_REVISION_ID,
             torch_dtype=torch.bfloat16,
         ).to("cuda")
-        self.pipe = OptimizedStableDiffusion3Pipeline(pipe)
+        cache = InMemoryPromptIndex()
+        self.pipe = OptimizedStableDiffusion3Pipeline(pipe, cache)
 
     @modal.method()
     def run(

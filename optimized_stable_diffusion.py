@@ -41,6 +41,9 @@ class OptimizedStableDiffusion3Pipeline(StableDiffusion3Pipeline):
     def cache_vector_field(self, prompt, delta_epsilon):
         self.vector_cache.add_prompt(prompt, delta_epsilon)
 
+    def get_cached_prompt(self, prompt):
+        return self.vector_cache.get_prompt(prompt)
+
     @torch.no_grad()
     @replace_example_docstring(EXAMPLE_DOC_STRING)
     def __call__(
